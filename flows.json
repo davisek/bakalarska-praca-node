@@ -1,0 +1,345 @@
+[
+    {
+        "id": "02e0b79c5e0419bb",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c38403ad7fb748c0",
+        "type": "chronos-config",
+        "name": "",
+        "latitudeType": "num",
+        "longitudeType": "num",
+        "timezone": "",
+        "sunPositions": []
+    },
+    {
+        "id": "e8d71b1f4ff828b0",
+        "type": "MySQLdatabase",
+        "name": "database",
+        "host": "192.168.137.1",
+        "port": "3306",
+        "db": "bakalarska_praca",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "c720ab1a01be69e5",
+        "type": "mqtt-broker",
+        "name": "Sensor broker",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "7d4a401d036413cb",
+        "type": "MySQLdatabase",
+        "name": "database_ntb",
+        "host": "192.168.137.31",
+        "port": "3306",
+        "db": "bakalarska_praca",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "a78149ce85be43aa",
+        "type": "rpi-dht22",
+        "z": "02e0b79c5e0419bb",
+        "name": "DHT22 sensor",
+        "topic": "rpi-dht22",
+        "dht": 22,
+        "pintype": "0",
+        "pin": "16",
+        "x": 760,
+        "y": 380,
+        "wires": [
+            [
+                "ff08ef83b20d160f"
+            ]
+        ]
+    },
+    {
+        "id": "fde64776494c55b7",
+        "type": "debug",
+        "z": "02e0b79c5e0419bb",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "0c04e86170bad1e1",
+        "type": "inject",
+        "z": "02e0b79c5e0419bb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1200",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 570,
+        "y": 380,
+        "wires": [
+            [
+                "a78149ce85be43aa"
+            ]
+        ]
+    },
+    {
+        "id": "5e705f72285727a4",
+        "type": "mysql",
+        "z": "02e0b79c5e0419bb",
+        "mydb": "7d4a401d036413cb",
+        "name": "MySQL",
+        "x": 1060,
+        "y": 380,
+        "wires": [
+            [
+                "fde64776494c55b7"
+            ]
+        ]
+    },
+    {
+        "id": "ff08ef83b20d160f",
+        "type": "function",
+        "z": "02e0b79c5e0419bb",
+        "name": "DB Insert",
+        "func": "var temperature = parseFloat(msg.payload);\nvar humidity = parseFloat(msg.humidity);\n\nvar now = new Date();\nnow.setHours(now.getHours() + 1);\nvar createdAt = now.toISOString().slice(0, 19).replace('T', ' ');\nvar updatedAt = createdAt;\n\nmsg.topic =\"INSERT INTO sensor_readings (temperature, humidity, created_at, updated_at) VALUES (?, ?, ?, ?);\";\nmsg.payload = [temperature, humidity, createdAt, updatedAt];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 440,
+        "wires": [
+            [
+                "5e705f72285727a4"
+            ]
+        ]
+    },
+    {
+        "id": "0f4bc67a4e8c4891",
+        "type": "mqtt out",
+        "z": "02e0b79c5e0419bb",
+        "name": "",
+        "topic": "temperature-data",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c720ab1a01be69e5",
+        "x": 1130,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "d6b36d04e7cca71b",
+        "type": "inject",
+        "z": "02e0b79c5e0419bb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 290,
+        "y": 540,
+        "wires": [
+            [
+                "2798d03ae0921032"
+            ]
+        ]
+    },
+    {
+        "id": "2798d03ae0921032",
+        "type": "rpi-dht22",
+        "z": "02e0b79c5e0419bb",
+        "name": "",
+        "topic": "rpi-dht22",
+        "dht": 22,
+        "pintype": "0",
+        "pin": "16",
+        "x": 480,
+        "y": 540,
+        "wires": [
+            [
+                "ecc6ecd6120996b6"
+            ]
+        ]
+    },
+    {
+        "id": "284f366ff8192d12",
+        "type": "debug",
+        "z": "02e0b79c5e0419bb",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "ecc6ecd6120996b6",
+        "type": "function",
+        "z": "02e0b79c5e0419bb",
+        "name": "DB Insert",
+        "func": "var temperature = parseFloat(msg.payload);\nvar humidity = parseFloat(msg.humidity);\n\nvar now = new Date();\nnow.setHours(now.getHours() + 1);\nvar createdAt = now.toISOString().slice(0, 19).replace('T', ' ');\n\nlet temperatureMessage = {\n    payload: {\n        value: temperature,\n        created_at: createdAt,\n    },\n    topic: \"temperature-data\"\n};\n\nlet humidityMessage = {\n    payload: {\n        value: humidity,\n        created_at: createdAt,\n    },\n    topic: \"humidity-data\"\n};\n\nreturn [temperatureMessage, humidityMessage];\n\n//msg.payload = {\n//    value: temperature,\n//    created_at: createdAt,\n//};\n\n//return msg;",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 540,
+        "wires": [
+            [
+                "0f4bc67a4e8c4891",
+                "284f366ff8192d12"
+            ],
+            [
+                "5252d3bd08aa9f7e"
+            ]
+        ]
+    },
+    {
+        "id": "5252d3bd08aa9f7e",
+        "type": "mqtt out",
+        "z": "02e0b79c5e0419bb",
+        "name": "",
+        "topic": "humidity-data",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "c720ab1a01be69e5",
+        "x": 960,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "df8ed3318b4be4ce",
+        "type": "debug",
+        "z": "02e0b79c5e0419bb",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1100,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "5acb2f67d54f8032",
+        "type": "exec",
+        "z": "02e0b79c5e0419bb",
+        "command": "git fsck --full",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 580,
+        "y": 800,
+        "wires": [
+            [
+                "b7828b98286b8ac0"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "b7828b98286b8ac0",
+        "type": "debug",
+        "z": "02e0b79c5e0419bb",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 790,
+        "y": 800,
+        "wires": []
+    }
+]
